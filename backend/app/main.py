@@ -74,7 +74,6 @@ def create_app(settings: Settings | None = None, extractor: ClaimExtractor | Non
         for original_name, file_type, content, storage_name in staged_files:
             stored_path = job_dir / storage_name
             stored_path.write_bytes(content)
-            document_type, sort_group = classify_document(original_name, file_type)
             split_documents = []
             if file_type == "pdf":
                 try:
@@ -107,6 +106,12 @@ def create_app(settings: Settings | None = None, extractor: ClaimExtractor | Non
                         )
                     )
             else:
+                try:
+                    classified_category = classify_document(original_name, file_type)
+                    document_type = active_settings.require_document_category(classified_category)
+                    sort_group = active_settings.document_sort_group(document_type)
+                except ValueError as exc:
+                    raise HTTPException(status_code=400, detail=str(exc)) from exc
                 document_id = f"doc-{uuid4().hex[:12]}"
                 summary = f"Uploaded {original_name}"
                 document = StoredDocument(

@@ -43,7 +43,7 @@ def split_pdf_for_ingestion(
         result = split_claim_file_azure(
             source_pdf,
             output_dir=split_output_dir,
-            categories=settings.pdf_splitter_categories,
+            categories=settings.document_categories,
             default_document_type=settings.pdf_splitter_default_document_type,
             project_endpoint=project_endpoint,
             deployment=deployment,
@@ -66,19 +66,20 @@ def _to_pdf_split_document(
     index: int,
     settings: Settings,
 ) -> PdfSplitDocument:
-    splitter_type = str(getattr(split_document, "document_type", "other"))
+    splitter_type = str(getattr(split_document, "document_type", "other")).strip().lower()
+    if splitter_type not in settings.document_category_by_name:
+        raise ValueError(f"PDF splitter returned unknown document category {splitter_type!r}.")
     page_count = int(getattr(split_document, "page_count", 1) or 1)
     start_page = int(getattr(split_document, "start_page", index) or index)
     end_page = int(getattr(split_document, "end_page", start_page) or start_page)
     document_name = str(getattr(split_document, "name", "") or splitter_type.replace("_", " ").title())
     splitter_summary = str(getattr(split_document, "summary", "") or "")
-    document_type, sort_group = map_splitter_document_type(splitter_type, settings)
     split_path = Path(getattr(split_document, "path"))
     return PdfSplitDocument(
         path=split_path,
         filename=split_path.name,
-        document_type=document_type,
-        sort_group=sort_group,
+        document_type=splitter_type,
+        sort_group=settings.document_sort_group(splitter_type),
         title=document_name,
         summary=(
             f"Split from {source_pdf.name}, pages {start_page}-{end_page}. "
@@ -86,11 +87,3 @@ def _to_pdf_split_document(
         ),
         page_count=page_count,
     )
-
-
-def map_splitter_document_type(splitter_type: str, settings: Settings) -> tuple[str, str]:
-    normalized = splitter_type.strip().lower()
-    category = settings.document_category_by_name.get(normalized)
-    if not category:
-        raise ValueError(f"PDF splitter returned unknown document category {splitter_type!r}.")
-    return category.document_type, category.sort_group

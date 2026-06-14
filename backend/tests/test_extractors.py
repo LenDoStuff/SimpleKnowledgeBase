@@ -206,7 +206,7 @@ def test_azure_structured_extraction_uses_claim_graph_response_format(tmp_path):
             Document(
                 id="doc-1",
                 summary="Document",
-                document_type="claim_form",
+                document_type="claim_forms",
                 title="FNOL",
                 document_date=None,
                 content_uri="/api/documents/doc-1/file",
@@ -244,7 +244,7 @@ def make_normalized_document(path: Path, file_type: str, pages: int = 1) -> Norm
     document = StoredDocument(
         id="doc-1",
         summary="Uploaded file",
-        document_type="claim_form",
+        document_type="claim_forms",
         title=path.stem,
         document_date=None,
         content_uri="/api/documents/doc-1/file",

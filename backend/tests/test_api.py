@@ -141,6 +141,7 @@ def test_pdf_upload_uses_splitter_documents(tmp_path, monkeypatch):
     assert status["files"][0]["filename"] == "claim - 01 - First Notice.pdf"
     assert status["files"][0]["pages"] == 2
     assert status["files"][0]["sort_group"] == "Claim Forms"
+    assert status["files"][0]["document_type"] == "claim_forms"
 
 
 def fake_split_pdf_for_ingestion(source_pdf, *, output_dir, settings):
@@ -151,7 +152,7 @@ def fake_split_pdf_for_ingestion(source_pdf, *, output_dir, settings):
         PdfSplitDocument(
             path=split_path,
             filename="claim - 01 - First Notice.pdf",
-            document_type="claim_form",
+            document_type="claim_forms",
             sort_group="Claim Forms",
             title="First Notice",
             summary="Split from claim.pdf, pages 1-2.",

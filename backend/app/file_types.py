@@ -59,17 +59,16 @@ def unique_storage_name(filename: str, used_names: set[str]) -> str:
             return candidate
 
 
-def classify_document(filename: str, file_type: str) -> tuple[str, str]:
+def classify_document(filename: str, file_type: str) -> str:
     name = filename.lower()
     if file_type == "image":
-        return "photo", "Photos / Images"
+        return "photos"
     if "invoice" in name or "bill" in name:
-        return "invoice", "Invoices"
+        return "invoices"
     if "report" in name or "inspection" in name or "engineer" in name or "fire" in name:
-        return "report", "Reports"
+        return "reports"
     if file_type == "xlsx":
-        return "spreadsheet", "Spreadsheets"
+        return "spreadsheets"
     if "proof" in name or "loss" in name or "claim" in name or "fnol" in name or "notice" in name:
-        return "claim_form", "Claim Forms"
-    return "other", "Other Documents"
-
+        return "claim_forms"
+    return "other"

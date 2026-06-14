@@ -29,7 +29,7 @@ def valid_graph() -> ClaimKnowledgeGraph:
             Document(
                 id="doc-1",
                 summary="Document",
-                document_type="claim_form",
+                document_type="claim_forms",
                 title="FNOL",
                 document_date=None,
                 content_uri="/api/documents/doc-1/file",
@@ -81,4 +81,3 @@ def test_invalid_event_link_is_rejected():
     payload["events"][0]["next_event_id"] = "missing-event"
     with pytest.raises(ValidationError):
         ClaimKnowledgeGraph(**payload)
-

@@ -6,10 +6,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from claim_file_splitter.customization import CategoryConfig
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ENV_FILE = REPO_ROOT / ".env"
 DEFAULT_DOCUMENT_CATEGORIES_PATH = REPO_ROOT / "config" / "document_categories.json"
+DOCUMENT_CATEGORY_FIELDS = {"name", "filename_prefix", "description"}
 
 
 def _load_env_file(path: Path) -> None:
@@ -29,30 +32,13 @@ def _load_env_file(path: Path) -> None:
 _load_env_file(ENV_FILE)
 
 
-@dataclass(frozen=True)
-class DocumentCategory:
-    name: str
-    filename_prefix: str
-    description: str
-    document_type: str
-    sort_group: str
-    sort_order: int
-
-    def to_splitter_category(self) -> dict[str, str]:
-        return {
-            "name": self.name,
-            "filename_prefix": self.filename_prefix,
-            "description": self.description,
-        }
-
-
 def _env_path(name: str, default: Path) -> Path:
     raw = os.getenv(name)
     path = Path(raw).expanduser() if raw else default
     return path if path.is_absolute() else REPO_ROOT / path
 
 
-def load_document_categories(path: Path) -> tuple[DocumentCategory, ...]:
+def load_document_categories(path: Path) -> tuple[CategoryConfig, ...]:
     if not path.exists():
         raise ValueError(f"Document category config not found: {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -69,21 +55,24 @@ def load_document_categories(path: Path) -> tuple[DocumentCategory, ...]:
     return categories
 
 
-def _category_from_row(row: Any, index: int) -> DocumentCategory:
+def _category_from_row(row: Any, index: int) -> CategoryConfig:
     if not isinstance(row, dict):
         raise ValueError(f"Document category #{index} must be an object.")
-    required = ("name", "filename_prefix", "description", "document_type", "sort_group", "sort_order")
-    missing = [key for key in required if key not in row]
+    keys = set(row)
+    missing = sorted(DOCUMENT_CATEGORY_FIELDS - keys)
     if missing:
         raise ValueError(f"Document category #{index} is missing: {', '.join(missing)}.")
-    return DocumentCategory(
-        name=str(row["name"]).strip(),
-        filename_prefix=str(row["filename_prefix"]).strip(),
-        description=str(row["description"]).strip(),
-        document_type=str(row["document_type"]).strip(),
-        sort_group=str(row["sort_group"]).strip(),
-        sort_order=int(row["sort_order"]),
-    )
+    extra = sorted(keys - DOCUMENT_CATEGORY_FIELDS)
+    if extra:
+        raise ValueError(f"Document category #{index} has unsupported fields: {', '.join(extra)}.")
+    try:
+        return CategoryConfig.model_validate(row)
+    except ValueError as exc:
+        raise ValueError(f"Document category #{index} is invalid: {exc}") from exc
+
+
+def category_label(category_name: str) -> str:
+    return category_name.replace("_", " ").title()
 
 
 @dataclass(frozen=True)
@@ -107,7 +96,7 @@ class Settings:
         "CLAIM_STRUCTURER_DOCUMENT_CATEGORIES_PATH",
         DEFAULT_DOCUMENT_CATEGORIES_PATH,
     )
-    document_categories: tuple[DocumentCategory, ...] = field(default_factory=tuple)
+    document_categories: tuple[CategoryConfig, ...] = field(default_factory=tuple)
     azure_ai_project_endpoint: str | None = os.getenv("AZURE_AI_PROJECT_ENDPOINT")
     azure_openai_deployment: str | None = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
@@ -144,10 +133,6 @@ class Settings:
         return bool(self.pdf_splitter_project_endpoint and self.pdf_splitter_deployment)
 
     @property
-    def pdf_splitter_categories(self) -> list[dict[str, str]]:
-        return [category.to_splitter_category() for category in self.document_categories]
-
-    @property
     def pdf_splitter_default_document_type(self) -> str:
         category_names = {category.name for category in self.document_categories}
         if self.pdf_splitter_default_category not in category_names:
@@ -157,12 +142,21 @@ class Settings:
         return self.pdf_splitter_default_category
 
     @property
-    def document_category_by_name(self) -> dict[str, DocumentCategory]:
+    def document_category_by_name(self) -> dict[str, CategoryConfig]:
         return {category.name: category for category in self.document_categories}
 
     @property
-    def sort_group_order(self) -> dict[str, int]:
-        return {category.sort_group: category.sort_order for category in self.document_categories}
+    def document_sort_order(self) -> dict[str, int]:
+        return {category.name: index for index, category in enumerate(self.document_categories)}
+
+    def require_document_category(self, category_name: str) -> str:
+        normalized = category_name.strip().lower()
+        if normalized not in self.document_category_by_name:
+            raise ValueError(f"Unknown configured document category {category_name!r}.")
+        return normalized
+
+    def document_sort_group(self, category_name: str) -> str:
+        return category_label(self.require_document_category(category_name))
 
 
 def get_settings() -> Settings:

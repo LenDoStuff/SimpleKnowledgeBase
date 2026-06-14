@@ -59,10 +59,11 @@ CLAIM_STRUCTURER_DOCUMENT_EXTRACTION_IMAGE_QUALITY=85
 ```
 
 Document categories are configured in `config/document_categories.json`. The
-same category list is passed to `claim-file-splitter` and used to map splitter
-results into app `document_type`, `sort_group`, and sort order values. If the
-splitter returns a category that is not configured, the app fails clearly rather
-than guessing a local mapping.
+category objects use the same schema as `claim-file-splitter`: `name`,
+`filename_prefix`, and `description`. The app uses the category `name` as
+`document_type`, derives display groups from the name, and sorts documents by
+the category order in the config file. If the splitter returns a category that
+is not configured, the app fails clearly rather than guessing a local mapping.
 
 The splitter accepts either the app's Foundry variables above or its native
 variable names:

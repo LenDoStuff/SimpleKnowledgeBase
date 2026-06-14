@@ -32,8 +32,7 @@ def test_duplicate_filenames_get_unique_storage_names():
 
 
 def test_document_sorting_groups():
-    assert classify_document("First Notice of Loss.pdf", "pdf") == ("claim_form", "Claim Forms")
-    assert classify_document("Engineer Report.pdf", "pdf") == ("report", "Reports")
-    assert classify_document("IMG_001.png", "image") == ("photo", "Photos / Images")
-    assert classify_document("Mitigation Invoice.xlsx", "xlsx") == ("invoice", "Invoices")
-
+    assert classify_document("First Notice of Loss.pdf", "pdf") == "claim_forms"
+    assert classify_document("Engineer Report.pdf", "pdf") == "reports"
+    assert classify_document("IMG_001.png", "image") == "photos"
+    assert classify_document("Mitigation Invoice.xlsx", "xlsx") == "invoices"

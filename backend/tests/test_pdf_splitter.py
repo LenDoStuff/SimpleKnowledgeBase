@@ -5,7 +5,7 @@ import pytest
 
 from backend.app import pdf_splitter as pdf_splitter_module
 from backend.app.config import Settings
-from backend.app.pdf_splitter import map_splitter_document_type, split_pdf_for_ingestion
+from backend.app.pdf_splitter import split_pdf_for_ingestion
 
 
 def test_pdf_splitter_requires_azure_config(tmp_path: Path):
@@ -117,31 +117,50 @@ def test_pdf_splitter_maps_splitter_documents(tmp_path: Path, monkeypatch):
         "output_dir",
         "project_endpoint",
     }
-    category_names = [category["name"] for category in calls[0]["categories"]]
+    assert calls[0]["categories"] is settings.document_categories
+    category_names = [category.name for category in calls[0]["categories"]]
     assert "invoices" in category_names
     assert calls[0]["default_document_type"] == "other"
     assert len(documents) == 1
     document = documents[0]
     assert document.path == split_path
     assert document.filename == "invoice_001.pdf"
-    assert document.document_type == "invoice"
+    assert document.document_type == "invoices"
     assert document.sort_group == "Invoices"
     assert document.page_count == 3
     assert "pages 1-3" in document.summary
     assert "Invoice for emergency mitigation." in document.summary
 
 
-def test_splitter_document_type_mapping(tmp_path: Path):
-    settings = Settings(data_dir=tmp_path)
+def test_unknown_splitter_document_type_fails(tmp_path: Path, monkeypatch):
+    source = tmp_path / "claim.pdf"
+    source.write_bytes(b"%PDF-1.4")
+    split_path = tmp_path / "out" / "repair_invoice_001.pdf"
+    split_path.parent.mkdir(parents=True)
+    split_path.write_bytes(b"%PDF-1.4")
+    settings = Settings(
+        data_dir=tmp_path,
+        pdf_splitter_mode="required",
+        foundry_project_endpoint="https://example.services.ai.azure.com/api/projects/test",
+        foundry_model_name="gpt-4.1-mini",
+    )
 
-    assert map_splitter_document_type("invoices", settings) == ("invoice", "Invoices")
-    assert map_splitter_document_type("reports", settings) == ("report", "Reports")
-    assert map_splitter_document_type("photos", settings) == ("photo", "Photos / Images")
-    assert map_splitter_document_type("claim_forms", settings) == ("claim_form", "Claim Forms")
+    def fake_splitter(*args, **kwargs):
+        return SimpleNamespace(
+            documents=[
+                SimpleNamespace(
+                    path=split_path,
+                    document_type="repair_invoices",
+                    name="Repair invoice",
+                    summary="Unknown category.",
+                    start_page=1,
+                    end_page=1,
+                    page_count=1,
+                )
+            ]
+        )
 
-
-def test_unknown_splitter_document_type_fails(tmp_path: Path):
-    settings = Settings(data_dir=tmp_path)
+    monkeypatch.setattr(pdf_splitter_module, "split_claim_file_azure", fake_splitter)
 
     with pytest.raises(ValueError, match="unknown document category"):
-        map_splitter_document_type("repair_invoices", settings)
+        split_pdf_for_ingestion(source, output_dir=tmp_path / "splitter-output", settings=settings)

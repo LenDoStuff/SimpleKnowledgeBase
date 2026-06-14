@@ -161,10 +161,10 @@ class Storage:
             ).fetchall()
 
         documents = [self._row_to_stored_document(row) for row in rows]
-        sort_group_order = self.settings.sort_group_order
+        document_sort_order = self.settings.document_sort_order
         return sorted(
             documents,
-            key=lambda item: (sort_group_order.get(item.sort_group, 999), item.filename.lower()),
+            key=lambda item: (document_sort_order.get(item.document_type, 999), item.filename.lower()),
         )
 
     def get_document(self, document_id: str) -> StoredDocument | None:
