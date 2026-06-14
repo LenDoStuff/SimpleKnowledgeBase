@@ -8,22 +8,21 @@ The app accepts PDF, PNG/JPEG, DOCX, and XLSX files. It stores uploads locally, 
 
 - Backend: Python, FastAPI, SQLite, Pydantic
 - AI adapter: Azure AI Projects / Microsoft Foundry via `AIProjectClient.get_openai_client()`
-- Frontend: React + Vite
+- Frontend: Streamlit
 - Local verification: explicit dev/test mock mode only
 
 ## Run Locally
 
 ```powershell
 python -m pip install -e ".[dev]"
-npm install --prefix frontend
 Copy-Item .env.example .env
 # Edit .env and set FOUNDRY_PROJECT_ENDPOINT and FOUNDRY_MODEL_NAME.
 az login
 python -m uvicorn backend.app.main:app --reload --port 8000
-npm run dev --prefix frontend
+python -m streamlit run frontend/app.py
 ```
 
-Open `http://localhost:5173`.
+Open the Streamlit URL, typically `http://localhost:8501`.
 
 ## Azure Configuration
 
@@ -102,5 +101,5 @@ Legacy `.doc` and `.xls` files are rejected with a clear error.
 
 ```powershell
 python -m pytest
-npm run build --prefix frontend
+python -m streamlit run frontend/app.py
 ```
