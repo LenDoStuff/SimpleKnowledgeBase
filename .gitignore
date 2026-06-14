@@ -1,0 +1,14 @@
+.claim_structurer_data/
+.env
+.env.*
+!.env.example
+.pytest_cache/
+.venv/
+*.egg-info/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+tmp/
+playwright-report/
+test-results/

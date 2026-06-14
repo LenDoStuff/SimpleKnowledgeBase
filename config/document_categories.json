@@ -1,0 +1,76 @@
+{
+  "categories": [
+    {
+      "name": "claim_forms",
+      "filename_prefix": "claim_form",
+      "description": "First notices of loss, claim forms, proof of loss, statements of loss, and claim intake documents.",
+      "document_type": "claim_form",
+      "sort_group": "Claim Forms",
+      "sort_order": 10
+    },
+    {
+      "name": "policy_documents",
+      "filename_prefix": "policy_document",
+      "description": "Policies, endorsements, coverage summaries, schedules, declarations, and policy correspondence.",
+      "document_type": "policy",
+      "sort_group": "Policy Documents",
+      "sort_order": 15
+    },
+    {
+      "name": "reports",
+      "filename_prefix": "report",
+      "description": "Engineer, adjuster, inspection, cause-and-origin, restoration, and damage assessment reports.",
+      "document_type": "report",
+      "sort_group": "Reports",
+      "sort_order": 20
+    },
+    {
+      "name": "photos",
+      "filename_prefix": "photo_section",
+      "description": "Photos, image logs, screenshots, and image-only damage sections.",
+      "document_type": "photo",
+      "sort_group": "Photos / Images",
+      "sort_order": 30
+    },
+    {
+      "name": "invoices",
+      "filename_prefix": "invoice",
+      "description": "Invoices, bills, estimates, purchase orders, mitigation charges, and repair cost documents.",
+      "document_type": "invoice",
+      "sort_group": "Invoices",
+      "sort_order": 40
+    },
+    {
+      "name": "spreadsheets",
+      "filename_prefix": "spreadsheet",
+      "description": "Schedules of values, equipment lists, cost spreadsheets, ledgers, and tabular claim workbooks.",
+      "document_type": "spreadsheet",
+      "sort_group": "Spreadsheets",
+      "sort_order": 50
+    },
+    {
+      "name": "correspondence",
+      "filename_prefix": "correspondence",
+      "description": "Emails, letters, claim notes, and communications between claim parties.",
+      "document_type": "correspondence",
+      "sort_group": "Correspondence",
+      "sort_order": 60
+    },
+    {
+      "name": "legal_documents",
+      "filename_prefix": "legal_document",
+      "description": "Attorney letters, legal demands, litigation notices, releases, and settlement documents.",
+      "document_type": "legal",
+      "sort_group": "Legal Documents",
+      "sort_order": 70
+    },
+    {
+      "name": "other",
+      "filename_prefix": "document",
+      "description": "Documents that do not match any configured industrial claim category.",
+      "document_type": "other",
+      "sort_group": "Other Documents",
+      "sort_order": 90
+    }
+  ]
+}
