@@ -1,9 +1,9 @@
 import json
 
 import pytest
-from claim_file_splitter.customization import CategoryConfig
 
 from backend.app.config import Settings, category_label, load_document_categories
+from backend.app.claim_file_splitter.customization import CategoryConfig
 
 
 def test_load_document_categories_from_config_file(tmp_path):

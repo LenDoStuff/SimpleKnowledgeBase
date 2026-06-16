@@ -3,9 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from claim_file_splitter import split_claim_file_azure
-
 from backend.app.config import Settings
+from backend.app.claim_file_splitter import split_claim_file_azure
 
 
 @dataclass(frozen=True)

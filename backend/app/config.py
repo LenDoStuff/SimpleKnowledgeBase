@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from claim_file_splitter.customization import CategoryConfig
+from backend.app.claim_file_splitter.customization import CategoryConfig
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
