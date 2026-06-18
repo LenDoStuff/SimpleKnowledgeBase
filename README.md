@@ -8,22 +8,21 @@ The app accepts PDF, PNG/JPEG, DOCX, and XLSX files. It stores uploads locally, 
 
 - Backend: Python, FastAPI, SQLite, Pydantic
 - AI adapter: Azure AI Projects / Microsoft Foundry via `AIProjectClient.get_openai_client()`
-- Frontend: React + Vite
+- Frontend: Streamlit
 - Local verification: explicit dev/test mock mode only
 
 ## Run Locally
 
 ```powershell
 python -m pip install -e ".[dev]"
-npm install --prefix frontend
 Copy-Item .env.example .env
 # Edit .env and set FOUNDRY_PROJECT_ENDPOINT and FOUNDRY_MODEL_NAME.
 az login
 python -m uvicorn backend.app.main:app --reload --port 8000
-npm run dev --prefix frontend
+python -m streamlit run frontend/app.py
 ```
 
-Open `http://localhost:5173`.
+Open the Streamlit URL, typically `http://localhost:8501`.
 
 ## Azure Configuration
 
@@ -40,9 +39,8 @@ FOUNDRY_PROJECT_ENDPOINT=https://<resource>.services.ai.azure.com/api/projects/<
 FOUNDRY_MODEL_NAME=<vision-capable-model-deployment>
 ```
 
-PDF uploads are pre-processed with
-[`LenDoStuff/claim-file-splitter`](https://github.com/LenDoStuff/claim-file-splitter)
-through its public `split_claim_file_azure(...)` API before graph extraction.
+PDF uploads are pre-processed with the internal vendored claim file splitter
+through `split_claim_file_azure(...)` before graph extraction.
 The splitter is required for PDFs; the app does not keep the uploaded PDF as a
 replacement document when splitter config or API calls fail.
 
@@ -59,7 +57,7 @@ CLAIM_STRUCTURER_DOCUMENT_EXTRACTION_IMAGE_QUALITY=85
 ```
 
 Document categories are configured in `config/document_categories.json`. The
-category objects use the same schema as `claim-file-splitter`: `name`,
+category objects use the same schema as the internal splitter: `name`,
 `filename_prefix`, and `description`. The app uses the category `name` as
 `document_type`, derives display groups from the name, and sorts documents by
 the category order in the config file. If the splitter returns a category that
@@ -75,7 +73,7 @@ AZURE_OPENAI_DEPLOYMENT=<vision-capable-model-deployment>
 
 The Azure adapter uses:
 
-- PDF documents split by `claim-file-splitter`, then rendered and extracted with Responses API `input_image` content in 5-page batches.
+- PDF documents split by the internal claim file splitter, then rendered and extracted with Responses API `input_image` content in 5-page batches.
 - PNG/JPEG input through Responses API `input_image` content.
 - DOCX/XLSX input through Responses API `input_file` content.
 - A second structured extraction pass that merges document-level outputs into the final claim graph.
@@ -102,5 +100,5 @@ Legacy `.doc` and `.xls` files are rejected with a clear error.
 
 ```powershell
 python -m pytest
-npm run build --prefix frontend
+python -m streamlit run frontend/app.py
 ```
